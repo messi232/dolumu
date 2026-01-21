@@ -1,0 +1,211 @@
+androdi manifest XAML
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+</manifest>
+
+
+
+
+
+app.xaml
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AtikGozTemel"
+             x:Class="AtikGozTemel.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+
+
+
+
+
+
+app.xaml.cs
+
+namespace AtikGozTemel
+{
+    public partial class App : Application
+    {
+        public App()
+        {
+            InitializeComponent();
+
+            MainPage = new AppShell();
+        }
+    }
+}
+
+
+
+
+appshall.xaml
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="AtikGozTemel.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:AtikGozTemel"
+    Shell.FlyoutBehavior="Disabled"
+    Title="AtikGozTemel">
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate local:MainPage}"
+        Route="MainPage" />
+
+</Shell>
+
+
+appshall.xaml.cs
+
+namespace AtikGozTemel
+{
+    public partial class AppShell : Shell
+    {
+        public AppShell()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+
+mainpage.xaml
+
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AtikGozTemel.MainPage"
+             BackgroundColor="#0F172A">
+
+    <VerticalStackLayout Padding="25" Spacing="20">
+
+        <Label Text="AtıkGöz"
+               FontSize="32"
+               TextColor="White"
+               HorizontalOptions="Center"
+               FontAttributes="Bold"/>
+
+        <Label x:Name="mesafeLabel"
+               Text="Mesafe: -- cm"
+               FontSize="22"
+               TextColor="White"
+               HorizontalOptions="Center"/>
+
+        <Label x:Name="durumLabel"
+               Text="Durum: --"
+               FontSize="18"
+               TextColor="#22c55e"
+               HorizontalOptions="Center"/>
+
+        <Label x:Name="konumLabel"
+               Text="Konum: --"
+               FontSize="16"
+               TextColor="#94A3B8"
+               HorizontalOptions="Center"/>
+
+        <Button Text="Mesafe Ölç"
+                BackgroundColor="#3B82F6"
+                TextColor="White"
+                CornerRadius="10"
+                Clicked="Olc_Clicked"/>
+
+    </VerticalStackLayout>
+</ContentPage>
+
+
+
+mainpage.xaml.cs
+
+
+namespace AtikGozTemel;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        KonumAl();
+    }
+
+    private void Olc_Clicked(object sender, EventArgs e)
+    {
+        int mesafe = new Random().Next(5, 100);
+        mesafeLabel.Text = $"Mesafe: {mesafe} cm";
+
+        if (mesafe < 20)
+            durumLabel.Text = "Durum: DOLU";
+        else
+            durumLabel.Text = "Durum: BOŞ";
+    }
+
+    private async void KonumAl()
+    {
+        try
+        {
+            var location = await Geolocation.GetLastKnownLocationAsync();
+
+            if (location != null)
+            {
+                konumLabel.Text =
+                    $"Konum: {location.Latitude:F4}, {location.Longitude:F4}";
+            }
+            else
+            {
+                konumLabel.Text = "Konum alınamadı";
+            }
+        }
+        catch
+        {
+            konumLabel.Text = "Konum izni reddedildi";
+        }
+    }
+}
+
+
+mauiprogram.cs
+
+using Microsoft.Extensions.Logging;
+
+namespace AtikGozTemel
+{
+    public static class MauiProgram
+    {
+        public static MauiApp CreateMauiApp()
+        {
+            var builder = MauiApp.CreateBuilder();
+            builder
+                .UseMauiApp<App>()
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                });
+
+#if DEBUG
+    		builder.Logging.AddDebug();
+#endif
+
+            return builder.Build();
+        }
+    }
+}
+
+
